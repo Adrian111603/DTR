@@ -1,17 +1,19 @@
-# DTR Management System (LGU)
+# DTR Management System
 
-A production-ready MVP **Daily Time Record (DTR) Management System** for a Local Government Unit.
-Full-stack monorepo: React 19 + TypeScript + Vite (frontend), Node/Express + Prisma (backend), PostgreSQL, Docker.
+A production-ready MVP **Daily Time Record (DTR) Management System** for offices, schools, businesses, agencies, and other organizations.
+Full-stack monorepo: React 19 + TypeScript + Vite frontend, Node/Express + Prisma backend, PostgreSQL, and Docker.
 
 ## Features
 
-- **Authentication** — JWT, role-based (Admin / HR), protected routes
-- **Dashboard** — KPIs + weekly/monthly attendance charts
-- **Employee Management** — CRUD, search, pagination
-- **Attendance** — manual entry (Time In / Time Out), edit, delete
-- **DTR Computation** — total hours, late minutes, undertime
-- **Reports** — daily / weekly / monthly, export to PDF & Excel
-- **Device Integration** — device CRUD, test connection, biometric attendance receiver endpoint
+- **Authentication** - JWT, role-based Admin / HR access, protected routes
+- **Dashboard** - KPIs and weekly/monthly attendance charts
+- **Employee Management** - CRUD, search, pagination, shift assignment
+- **Shift Management** - configurable AM/PM schedule, grace minutes, and OT start/end
+- **Attendance** - manual entry, edit, delete, and device-synced logs
+- **DTR Computation** - first scan as IN, latest scan as OUT, total hours, late, undertime, OT
+- **Reports** - daily / weekly / monthly, export to PDF and Excel
+- **Printable DTR Form** - Service Form No. 48 style, Letter/Long paper, one or two forms per page
+- **Device Integration** - device CRUD, test connection, attendance receiver endpoint, optional log sync
 
 The system works fully **without any biometric device connected**.
 
@@ -24,19 +26,19 @@ docker compose up -d
 Then open:
 
 - Frontend: http://localhost:5173
-- Backend:  http://localhost:3000
+- Backend: http://localhost:3000
 
-Migrations + seed run automatically on backend startup.
+Migrations and seed run automatically on backend startup.
 
-### Default Login
+## Default Login
 
 | Username | Password   | Role  |
 |----------|------------|-------|
 | `admin`  | `admin123` | ADMIN |
 
-## Device Attendance Endpoint (works via Postman)
+## Device Attendance Endpoint
 
-```
+```http
 POST http://localhost:3000/api/device/attendance
 Content-Type: application/json
 
@@ -48,16 +50,15 @@ Content-Type: application/json
 }
 ```
 
-`employeeId` matches the employee's **Employee Number**. The endpoint stores the log
-and auto-assigns event type (TIME_IN / TIME_OUT) based on existing logs for that day.
+`employeeId` matches the employee's **Employee Number**. The endpoint stores the raw log and the DTR uses the oldest scan of the day as Time In and the latest scan as Time Out.
 
-## Local Development (without Docker)
+## Local Development
 
 ```bash
 # backend
 cd backend
 npm install
-cp .env.example .env   # adjust DATABASE_URL to your local postgres
+cp .env.example .env
 npx prisma migrate dev
 npx prisma db seed
 npm run dev
@@ -70,30 +71,32 @@ npm run dev
 
 ## Project Structure
 
-```
+```text
 .
-├── docker-compose.yml
-├── backend/
-│   ├── prisma/
-│   │   ├── schema.prisma
-│   │   ├── migrations/
-│   │   └── seed.ts
-│   └── src/
-│       ├── index.ts
-│       ├── middleware/
-│       ├── routes/
-│       └── utils/
-└── frontend/
-    └── src/
-        ├── api/
-        ├── components/
-        ├── context/
-        ├── pages/
-        └── ...
+|-- docker-compose.yml
+|-- backend/
+|   |-- prisma/
+|   |   |-- schema.prisma
+|   |   |-- migrations/
+|   |   `-- seed.ts
+|   `-- src/
+|       |-- index.ts
+|       |-- middleware/
+|       |-- routes/
+|       `-- utils/
+`-- frontend/
+    `-- src/
+        |-- api/
+        |-- components/
+        |-- context/
+        |-- pages/
+        `-- ...
 ```
 
-## Default Schedule (DTR computation)
+## Default Schedule
 
-- Standard work day: **08:00 – 17:00** (9 hrs incl. 1 hr lunch → 8 working hrs)
-- Late = minutes after 08:00 on Time In
-- Undertime = minutes before 17:00 on Time Out
+- Standard work day: **08:00 - 17:00**
+- Lunch break: **12:00 - 13:00**
+- Late = minutes after shift Time In
+- Undertime = minutes before shift Time Out
+- OT = minutes after configured OT start

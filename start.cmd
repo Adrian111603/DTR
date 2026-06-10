@@ -1,10 +1,10 @@
 @echo off
 setlocal enabledelayedexpansion
-title LGU DTR Management System - Launcher
+title DTR Management System - Launcher
 cd /d "%~dp0"
 
 echo ============================================
-echo   LGU DTR Management System - Launcher
+echo   DTR Management System - Launcher
 echo ============================================
 echo.
 

@@ -1,8 +1,8 @@
 @echo off
-title LGU DTR Management System - Stop
+title DTR Management System - Stop
 cd /d "%~dp0"
 
-echo Stopping LGU DTR Management System containers...
+echo Stopping DTR Management System containers...
 docker compose down
 echo.
 echo Done. Data is preserved in the postgres volume.

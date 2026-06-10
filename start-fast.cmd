@@ -1,10 +1,10 @@
 @echo off
 setlocal enabledelayedexpansion
-title LGU DTR Management System - Fast Launch
+title DTR Management System - Fast Launch
 cd /d "%~dp0"
 
 echo ============================================
-echo   LGU DTR - Fast Launch ^(no rebuild^)
+echo   DTR Management System - Fast Launch ^(no rebuild^)
 echo ============================================
 echo.
 
