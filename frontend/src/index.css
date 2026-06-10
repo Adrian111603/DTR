@@ -1,0 +1,262 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100;
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-brand-700 text-white hover:bg-brand-800 focus:ring-brand-500;
+  }
+  .btn-secondary {
+    @apply btn bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600;
+  }
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+  }
+  .input {
+    @apply w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100;
+  }
+  .label {
+    @apply mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300;
+  }
+  .card {
+    @apply rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800;
+  }
+  .table-th {
+    @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400;
+  }
+  .table-td {
+    @apply px-4 py-3 text-sm text-gray-700 dark:text-gray-200;
+  }
+  .badge {
+    @apply inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+}
+
+.dtr-paper-scroll {
+  overflow-x: auto;
+  padding: 16px 0 32px;
+}
+
+.dtr-paper {
+  position: relative;
+  margin: 0 auto;
+  background: #fff;
+  color: #000;
+  font-family: "Times New Roman", Times, serif;
+  box-shadow: 0 12px 28px rgb(15 23 42 / 0.18);
+}
+
+.dtr-paper--letter {
+  width: 8.5in;
+  height: 11in;
+}
+
+.dtr-paper--long {
+  width: 8.5in;
+  height: 13in;
+}
+
+.dtr-paper::before {
+  content: "";
+  position: absolute;
+  top: 0.15in;
+  bottom: 0.15in;
+  left: 50%;
+  z-index: 3;
+  border-left: 1px dashed #111;
+}
+
+.dtr-sheet-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100%;
+}
+
+.dtr-half {
+  min-width: 0;
+  height: 100%;
+  padding: 0.22in 0.18in;
+}
+
+.dtr-half-left {
+  padding-right: 0.16in;
+}
+
+.dtr-half-right {
+  padding-left: 0.16in;
+}
+
+.dtr-sheet-form {
+  display: grid;
+  grid-template-rows: auto auto auto auto auto auto minmax(0, 1fr) auto auto auto;
+  height: 100%;
+  min-height: 0;
+  font-size: 10px;
+  line-height: 1.12;
+}
+
+.dtr-service-no {
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.dtr-main-title {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.dtr-name-line {
+  margin-top: 0.18in;
+  border-bottom: 1px dashed #000;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  min-height: 16px;
+}
+
+.dtr-small-center {
+  text-align: center;
+  font-size: 9px;
+  font-style: italic;
+}
+
+.dtr-meta-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 8px;
+  row-gap: 2px;
+  margin-top: 0.12in;
+  font-size: 10px;
+}
+
+.dtr-fill-line {
+  border-bottom: 1px dashed #000;
+  font-weight: 700;
+}
+
+.dtr-hours-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 8px;
+  margin-top: 0.12in;
+  font-size: 9.5px;
+}
+
+.dtr-form-table {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin-top: 0.08in;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 8.5px;
+}
+
+.dtr-form-table th,
+.dtr-form-table td {
+  border: 1px solid #111;
+  padding: 1px 2px;
+  vertical-align: middle;
+}
+
+.dtr-form-table td {
+  border-bottom-style: dotted;
+}
+
+.dtr-form-table th {
+  text-align: center;
+  font-weight: 700;
+}
+
+.dtr-form-table th:first-child,
+.dtr-form-table td:first-child {
+  width: 0.25in;
+}
+
+.dtr-certification {
+  margin-top: 0.08in;
+  font-size: 8.5px;
+  line-height: 1.15;
+}
+
+.dtr-verify {
+  margin-top: 0.08in;
+  text-align: center;
+  font-size: 9.5px;
+}
+
+.dtr-signatory {
+  margin-top: 0.18in;
+  text-align: center;
+  font-size: 10px;
+}
+
+.dtr-sign-line {
+  width: 2.15in;
+  max-width: 90%;
+  margin: 0 auto;
+  border-bottom: 1px solid #000;
+  min-height: 12px;
+}
+
+.dtr-sign-name {
+  font-weight: 700;
+}
+
+.dtr-blank-half {
+  height: 100%;
+}
+
+@media print {
+  body {
+    background: white !important;
+  }
+
+  .no-print,
+  aside,
+  header {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .dtr-paper-scroll {
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  .dtr-paper {
+    margin: 0 !important;
+    box-shadow: none;
+  }
+
+  .dtr-paper--letter {
+    width: 8.5in !important;
+    height: 11in !important;
+  }
+
+  .dtr-paper--long {
+    width: 8.5in !important;
+    height: 13in !important;
+  }
+}

@@ -1,0 +1,122 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  HR
+}
+
+enum EmploymentStatus {
+  REGULAR
+  CONTRACTUAL
+  CASUAL
+  JOB_ORDER
+  COTERMINOUS
+}
+
+enum EventType {
+  TIME_IN
+  TIME_OUT
+}
+
+enum DeviceStatus {
+  ONLINE
+  OFFLINE
+  UNKNOWN
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  role         Role     @default(HR)
+  createdAt    DateTime @default(now())
+}
+
+model Employee {
+  id             Int              @id @default(autoincrement())
+  employeeNumber String           @unique
+  firstName      String
+  middleName     String?
+  lastName       String
+  department     String
+  position       String
+  status         EmploymentStatus @default(REGULAR)
+  shiftId        Int?
+  createdAt      DateTime         @default(now())
+
+  attendances Attendance[]
+  dtrs        DTR[]
+  shift       Shift?       @relation(fields: [shiftId], references: [id], onDelete: SetNull)
+
+  @@index([shiftId])
+}
+
+model Attendance {
+  id         Int       @id @default(autoincrement())
+  employeeId Int
+  timestamp  DateTime
+  eventType  EventType
+  deviceId   Int?
+  createdAt  DateTime  @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  device   Device?  @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+
+  @@index([employeeId])
+  @@index([timestamp])
+}
+
+model Device {
+  id        Int          @id @default(autoincrement())
+  name      String
+  ipAddress String
+  port      Int
+  status    DeviceStatus @default(UNKNOWN)
+  lastCheck DateTime?
+  createdAt DateTime     @default(now())
+
+  attendances Attendance[]
+}
+
+model Shift {
+  id             Int      @id @default(autoincrement())
+  name           String   @unique
+  amIn           String   @default("08:00")
+  amOut          String   @default("12:00")
+  pmIn           String   @default("13:00")
+  pmOut          String   @default("17:00")
+  regularDays    String   @default("Monday-Friday")
+  saturdayHours  String?
+  overtimeStart  String?
+  overtimeEnd    String?
+  graceMinutes   Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  employees Employee[]
+}
+
+model DTR {
+  id                Int      @id @default(autoincrement())
+  employeeId        Int
+  date              DateTime @db.Date
+  timeIn            DateTime?
+  timeOut           DateTime?
+  totalHours        Float    @default(0)
+  lateMinutes       Int      @default(0)
+  undertimeMinutes  Int      @default(0)
+  overtimeMinutes   Int      @default(0)
+  createdAt         DateTime @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, date])
+  @@index([date])
+}

@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dtr_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dtr
+      POSTGRES_PASSWORD: dtr_password
+      POSTGRES_DB: dtr_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dtr -d dtr_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dtr_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://dtr:dtr_password@postgres:5432/dtr_db?schema=public"
+      JWT_SECRET: "change_this_in_production_super_secret_key"
+      PORT: "3000"
+      NODE_ENV: "production"
+      TZ: "Asia/Manila"
+      DEVICE_LOG_AUTO_SYNC: "true"
+      DEVICE_LOG_SYNC_INTERVAL_MS: "60000"
+      DEVICE_LOG_WEB_PORT: "80"
+      DEVICE_LOG_WEB_PASSWORD: "12345"
+    ports:
+      - "3000:3000"
+    command: sh -c "npx prisma migrate deploy && npx prisma db seed && node dist/index.js"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dtr_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: "http://localhost:3000/api"
+    ports:
+      - "5173:5173"
+
+volumes:
+  postgres_data:
