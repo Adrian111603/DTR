@@ -1,5 +1,6 @@
 import { PrismaClient, EmploymentStatus, EventType } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { computeDtr, dateOnly } from '../src/utils/dtr';
 
 const prisma = new PrismaClient();
 
@@ -49,6 +50,17 @@ function atTime(base: Date, hour: number, minute: number): Date {
   return d;
 }
 
+async function createAttendanceIfMissing(employeeId: number, timestamp: Date, eventType: EventType) {
+  const existing = await prisma.attendance.findFirst({
+    where: { employeeId, timestamp, eventType },
+  });
+  if (existing) return;
+
+  await prisma.attendance.create({
+    data: { employeeId, timestamp, eventType },
+  });
+}
+
 async function main() {
   console.log('Seeding database...');
 
@@ -68,7 +80,7 @@ async function main() {
     create: { username: 'hr', passwordHash: hrHash, role: 'HR' },
   });
 
-  await prisma.shift.upsert({
+  const defaultShift = await prisma.shift.upsert({
     where: { name: 'Default Office Hours' },
     update: {},
     create: {
@@ -84,6 +96,77 @@ async function main() {
       graceMinutes: 0,
     },
   });
+
+  const dummyEmployee = await prisma.employee.upsert({
+    where: { employeeNumber: 'DUMMY-001' },
+    update: {
+      firstName: 'Dummy',
+      middleName: 'M',
+      lastName: 'Employee',
+      department: 'Human Resource Management Office',
+      position: 'Administrative Aide IV',
+      status: 'REGULAR',
+      shiftId: defaultShift.id,
+    },
+    create: {
+      employeeNumber: 'DUMMY-001',
+      firstName: 'Dummy',
+      middleName: 'M',
+      lastName: 'Employee',
+      department: 'Human Resource Management Office',
+      position: 'Administrative Aide IV',
+      status: 'REGULAR',
+      shiftId: defaultShift.id,
+    },
+  });
+
+  const seedBase = new Date();
+  const dummyDaysInMonth = new Date(seedBase.getFullYear(), seedBase.getMonth() + 1, 0).getDate();
+  let dummyRecords = 0;
+
+  for (let day = 1; day <= dummyDaysInMonth && dummyRecords < 12; day++) {
+    const baseDay = new Date(seedBase.getFullYear(), seedBase.getMonth(), day);
+    const dow = baseDay.getDay();
+    if (dow === 0 || dow === 6) continue;
+
+    const lateMinutes = dummyRecords % 4 === 0 ? 7 : 0;
+    const outMinutes = dummyRecords % 5 === 0 ? 45 : 0;
+    const timeIn = atTime(baseDay, 8, lateMinutes);
+    const amOut = atTime(baseDay, 12, 0);
+    const pmIn = atTime(baseDay, 13, 0);
+    const timeOut = atTime(baseDay, 17, outMinutes);
+    const dtrDate = dateOnly(baseDay);
+    const computed = computeDtr(timeIn, timeOut, defaultShift);
+
+    await createAttendanceIfMissing(dummyEmployee.id, timeIn, EventType.TIME_IN);
+    await createAttendanceIfMissing(dummyEmployee.id, amOut, EventType.TIME_OUT);
+    await createAttendanceIfMissing(dummyEmployee.id, pmIn, EventType.TIME_IN);
+    await createAttendanceIfMissing(dummyEmployee.id, timeOut, EventType.TIME_OUT);
+
+    await prisma.dTR.upsert({
+      where: { employeeId_date: { employeeId: dummyEmployee.id, date: dtrDate } },
+      update: {
+        timeIn,
+        timeOut,
+        totalHours: computed.totalHours,
+        lateMinutes: computed.lateMinutes,
+        undertimeMinutes: computed.undertimeMinutes,
+        overtimeMinutes: computed.overtimeMinutes,
+      },
+      create: {
+        employeeId: dummyEmployee.id,
+        date: dtrDate,
+        timeIn,
+        timeOut,
+        totalHours: computed.totalHours,
+        lateMinutes: computed.lateMinutes,
+        undertimeMinutes: computed.undertimeMinutes,
+        overtimeMinutes: computed.overtimeMinutes,
+      },
+    });
+
+    dummyRecords++;
+  }
 
   if (process.env.SEED_DEMO_DATA !== 'true') {
     console.log('Demo employees, attendance, and devices skipped.');

@@ -9,40 +9,40 @@ body,
 }
 
 body {
-  @apply bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100;
+  @apply bg-slate-100 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
   font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-offset-slate-950;
   }
   .btn-primary {
-    @apply btn bg-brand-700 text-white hover:bg-brand-800 focus:ring-brand-500;
+    @apply btn bg-brand-800 text-white shadow-sm hover:bg-brand-900 focus:ring-brand-500;
   }
   .btn-secondary {
-    @apply btn bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600;
+    @apply btn border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 focus:ring-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800;
   }
   .btn-danger {
-    @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+    @apply btn bg-red-600 text-white shadow-sm hover:bg-red-700 focus:ring-red-500;
   }
   .input {
-    @apply w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100;
+    @apply min-h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 shadow-sm transition focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-brand-500 dark:focus:ring-brand-500/20 dark:disabled:bg-slate-800;
   }
   .label {
-    @apply mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300;
+    @apply mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300;
   }
   .card {
-    @apply rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800;
+    @apply rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900;
   }
   .table-th {
-    @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400;
+    @apply bg-slate-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-900 dark:text-slate-400;
   }
   .table-td {
-    @apply px-4 py-3 text-sm text-gray-700 dark:text-gray-200;
+    @apply px-4 py-3 text-sm text-slate-700 dark:text-slate-200;
   }
   .badge {
-    @apply inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium;
+    @apply inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold;
   }
 }
 
@@ -68,6 +68,16 @@ body {
 .dtr-paper--long {
   width: 8.5in;
   height: 13in;
+}
+
+.dtr-paper--a4 {
+  width: 210mm;
+  height: 297mm;
+}
+
+.dtr-paper--legal {
+  width: 8.5in;
+  height: 14in;
 }
 
 .dtr-paper::before {
@@ -100,6 +110,18 @@ body {
   padding-left: 0.16in;
 }
 
+.dtr-paper--a4 .dtr-half {
+  padding: 0.2in 0.14in;
+}
+
+.dtr-paper--a4 .dtr-half-left {
+  padding-right: 0.13in;
+}
+
+.dtr-paper--a4 .dtr-half-right {
+  padding-left: 0.13in;
+}
+
 .dtr-sheet-form {
   display: grid;
   grid-template-rows: auto auto auto auto auto auto minmax(0, 1fr) auto auto auto;
@@ -107,6 +129,10 @@ body {
   min-height: 0;
   font-size: 10px;
   line-height: 1.12;
+}
+
+.dtr-paper--a4 .dtr-sheet-form {
+  font-size: 9.6px;
 }
 
 .dtr-service-no {
@@ -137,6 +163,15 @@ body {
   font-style: italic;
 }
 
+.dtr-sheet-form--layout1 .dtr-service-no {
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.dtr-sheet-form--layout1 .dtr-name-line {
+  margin-top: 0.26in;
+}
+
 .dtr-meta-grid {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -151,6 +186,16 @@ body {
   font-weight: 700;
 }
 
+.dtr-month-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: end;
+  column-gap: 10px;
+  margin-top: 0.08in;
+  font-size: 10.5px;
+  font-style: italic;
+}
+
 .dtr-hours-grid {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -159,14 +204,44 @@ body {
   font-size: 9.5px;
 }
 
+.dtr-hours-grid--original {
+  grid-template-columns: 1fr 1.15fr;
+  column-gap: 10px;
+  margin-top: 0.06in;
+  font-size: 10px;
+  font-style: italic;
+}
+
+.dtr-hours-label {
+  text-align: center;
+}
+
+.dtr-hours-values {
+  display: grid;
+  gap: 2px;
+}
+
+.dtr-hours-values > div {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: end;
+  column-gap: 6px;
+}
+
 .dtr-form-table {
   width: 100%;
   height: 100%;
   min-height: 0;
-  margin-top: 0.08in;
+  margin-top: 0.02in;
   border-collapse: collapse;
   table-layout: fixed;
   font-size: 8.5px;
+  border-top: 3px double #111;
+  border-bottom: 3px double #111;
+}
+
+.dtr-paper--a4 .dtr-form-table {
+  font-size: 8.2px;
 }
 
 .dtr-form-table th,
@@ -176,7 +251,7 @@ body {
   vertical-align: middle;
 }
 
-.dtr-form-table td {
+.dtr-form-table tbody td {
   border-bottom-style: dotted;
 }
 
@@ -185,27 +260,67 @@ body {
   font-weight: 700;
 }
 
+.dtr-form-table .dtr-group-start {
+  border-left-width: 2px;
+}
+
 .dtr-form-table th:first-child,
 .dtr-form-table td:first-child {
   width: 0.25in;
 }
 
+.dtr-form-table tfoot td {
+  border-top: 3px double #111;
+  border-bottom: 3px double #111;
+  height: 0.22in;
+  font-weight: 700;
+}
+
+.dtr-total-label {
+  padding-left: 0.18in !important;
+}
+
+.dtr-total-label span:first-child {
+  margin-right: 0.14in;
+}
+
+.dtr-total-hours {
+  display: inline-block;
+  margin-right: 0.14in;
+  font-size: 8px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.dtr-total-line {
+  display: inline-block;
+  width: 0.75in;
+  border-bottom: 1px dashed #000;
+  vertical-align: middle;
+}
+
 .dtr-certification {
-  margin-top: 0.08in;
-  font-size: 8.5px;
-  line-height: 1.15;
+  margin-top: 0.1in;
+  padding: 0 0.14in;
+  font-size: 10px;
+  font-style: italic;
+  line-height: 1.25;
+  text-align: justify;
 }
 
 .dtr-verify {
-  margin-top: 0.08in;
+  margin-top: 0.12in;
+  border-top: 3px double #111;
   text-align: center;
-  font-size: 9.5px;
+  font-size: 10px;
+  font-style: italic;
 }
 
 .dtr-signatory {
-  margin-top: 0.18in;
+  margin-top: 0.24in;
   text-align: center;
   font-size: 10px;
+  font-style: italic;
 }
 
 .dtr-sign-line {
@@ -258,5 +373,15 @@ body {
   .dtr-paper--long {
     width: 8.5in !important;
     height: 13in !important;
+  }
+
+  .dtr-paper--a4 {
+    width: 210mm !important;
+    height: 297mm !important;
+  }
+
+  .dtr-paper--legal {
+    width: 8.5in !important;
+    height: 14in !important;
   }
 }

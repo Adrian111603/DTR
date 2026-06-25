@@ -18,13 +18,20 @@ export default function AttendancePage() {
   const [filterDate, setFilterDate] = useState('');
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [form, setForm] = useState({ employeeId: '', date: todayStr(), timeIn: '08:00', timeOut: '17:00' });
+  const [form, setForm] = useState({
+    employeeId: '',
+    date: todayStr(),
+    amTimeIn: '',
+    amTimeOut: '',
+    pmTimeIn: '',
+    pmTimeOut: '',
+  });
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const params: any = { page, pageSize: 15, dailyOnly: true };
+      const params: any = { page, pageSize: 15 };
       if (filterDate) params.date = filterDate;
       const res = await api.get('/attendance', { params });
       setResult(res.data);
@@ -44,7 +51,14 @@ export default function AttendancePage() {
   }, []);
 
   const openAdd = () => {
-    setForm({ employeeId: employees[0]?.id ? String(employees[0].id) : '', date: todayStr(), timeIn: '08:00', timeOut: '17:00' });
+    setForm({
+      employeeId: employees[0]?.id ? String(employees[0].id) : '',
+      date: todayStr(),
+      amTimeIn: '',
+      amTimeOut: '',
+      pmTimeIn: '',
+      pmTimeOut: '',
+    });
     setModalOpen(true);
   };
 
@@ -56,8 +70,10 @@ export default function AttendancePage() {
       await api.post('/attendance', {
         employeeId: Number(form.employeeId),
         date: form.date,
-        timeIn: form.timeIn || null,
-        timeOut: form.timeOut || null,
+        amTimeIn: form.amTimeIn || null,
+        amTimeOut: form.amTimeOut || null,
+        pmTimeIn: form.pmTimeIn || null,
+        pmTimeOut: form.pmTimeOut || null,
       });
       toast('Attendance recorded', 'success');
       setModalOpen(false);
@@ -66,29 +82,6 @@ export default function AttendancePage() {
       toast(apiError(err, 'Failed to record attendance'), 'error');
     } finally {
       setSaving(false);
-    }
-  };
-
-  const remove = async (log: Attendance) => {
-    if (!confirm('Delete this attendance log?')) return;
-    try {
-      await api.delete(`/attendance/${log.id}`);
-      toast('Attendance deleted', 'success');
-      load();
-    } catch (err) {
-      toast(apiError(err, 'Failed to delete'), 'error');
-    }
-  };
-
-  const toggleEvent = async (log: Attendance) => {
-    try {
-      await api.put(`/attendance/${log.id}`, {
-        eventType: log.eventType === 'TIME_IN' ? 'TIME_OUT' : 'TIME_IN',
-      });
-      toast('Event type updated', 'success');
-      load();
-    } catch (err) {
-      toast(apiError(err, 'Failed to update'), 'error');
     }
   };
 
@@ -121,7 +114,6 @@ export default function AttendancePage() {
                   <th className="table-th">Event</th>
                   <th className="table-th">Timestamp</th>
                   <th className="table-th">Source</th>
-                  <th className="table-th text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
@@ -134,12 +126,6 @@ export default function AttendancePage() {
                     <td className="table-td"><StatusBadge value={log.eventType} /></td>
                     <td className="table-td">{new Date(log.timestamp).toLocaleString()}</td>
                     <td className="table-td">{log.device ? log.device.name : 'Manual'}</td>
-                    <td className="table-td">
-                      <div className="flex justify-end gap-2">
-                        <button className="btn-secondary px-3 py-1 text-xs" onClick={() => toggleEvent(log)}>Toggle</button>
-                        <button className="btn-danger px-3 py-1 text-xs" onClick={() => remove(log)}>Delete</button>
-                      </div>
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -169,17 +155,30 @@ export default function AttendancePage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="label">Time In</label>
-              <input type="time" className="input" value={form.timeIn}
-                onChange={(e) => setForm({ ...form, timeIn: e.target.value })} />
+              <label className="label">AM Time In</label>
+              <input type="time" className="input" value={form.amTimeIn}
+                onChange={(e) => setForm({ ...form, amTimeIn: e.target.value })} />
             </div>
             <div>
-              <label className="label">Time Out</label>
-              <input type="time" className="input" value={form.timeOut}
-                onChange={(e) => setForm({ ...form, timeOut: e.target.value })} />
+              <label className="label">AM Time Out</label>
+              <input type="time" className="input" value={form.amTimeOut}
+                onChange={(e) => setForm({ ...form, amTimeOut: e.target.value })} />
+            </div>
+            <div>
+              <label className="label">PM Time In</label>
+              <input type="time" className="input" value={form.pmTimeIn}
+                onChange={(e) => setForm({ ...form, pmTimeIn: e.target.value })} />
+            </div>
+            <div>
+              <label className="label">PM Time Out</label>
+              <input type="time" className="input" value={form.pmTimeOut}
+                onChange={(e) => setForm({ ...form, pmTimeOut: e.target.value })} />
             </div>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Leave a time blank to skip that punch.</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            This page only accepts missing punches for today while the employee is inside the AM or PM shift window.
+            Use the employee Attendance button for admin-code date edits.
+          </p>
           <div className="flex justify-end gap-2 pt-2">
             <button type="button" className="btn-secondary" onClick={() => setModalOpen(false)}>Cancel</button>
             <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>

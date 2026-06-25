@@ -11,6 +11,7 @@ import deviceRoutes, { receiveAttendance, receiveHeartbeat } from './routes/devi
 import reportRoutes from './routes/reports';
 import { startDeviceLogAutoSync } from './jobs/deviceLogAutoSync';
 import shiftRoutes from './routes/shifts';
+import hiddenAdminCodeRoutes from './routes/hiddenAdminCode';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -44,6 +45,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/device', deviceRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/shifts', shiftRoutes);
+app.use('/api/_hidden/admin-code', hiddenAdminCodeRoutes);
 
 // 404
 app.use((_req, res) => {

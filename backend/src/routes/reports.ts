@@ -57,6 +57,11 @@ function minutesParts(total: number) {
   };
 }
 
+function minutesFromClock(clock: string): number {
+  const [hour = 0, minute = 0] = clock.split(':').map(Number);
+  return (hour * 60) + minute;
+}
+
 function fmtTime(d: Date | null): string {
   if (!d) return '--';
   return new Date(d).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -116,14 +121,33 @@ router.get('/monthly-form/data', async (req, res) => {
     const dtr = dtrByDate.get(key);
     const undertime = minutesParts(dtr?.undertimeMinutes ?? 0);
     const overtime = minutesParts(dtr?.overtimeMinutes ?? 0);
+    const shift = employee.shift ?? {
+      amIn: '08:00',
+      amOut: '12:00',
+      pmIn: '13:00',
+      pmOut: '17:00',
+    };
+    const noonCutoff = Math.floor((minutesFromClock(shift.amOut) + minutesFromClock(shift.pmIn)) / 2);
+    const amLogs = dayLogs.filter((log) => {
+      const timestamp = new Date(log.timestamp);
+      return ((timestamp.getHours() * 60) + timestamp.getMinutes()) < noonCutoff;
+    });
+    const pmLogs = dayLogs.filter((log) => {
+      const timestamp = new Date(log.timestamp);
+      return ((timestamp.getHours() * 60) + timestamp.getMinutes()) >= noonCutoff;
+    });
+    const amIn = amLogs.find((log) => log.eventType === 'TIME_IN') ?? amLogs[0] ?? null;
+    const amOut = [...amLogs].reverse().find((log) => log.eventType === 'TIME_OUT') ?? (amLogs.length > 1 ? amLogs[amLogs.length - 1] : null);
+    const pmIn = pmLogs.find((log) => log.eventType === 'TIME_IN') ?? (pmLogs.length > 1 ? pmLogs[0] : null);
+    const pmOut = [...pmLogs].reverse().find((log) => log.eventType === 'TIME_OUT') ?? pmLogs[pmLogs.length - 1] ?? null;
 
     days.push({
       day,
       date: key,
-      amArrival: dayLogs[0]?.timestamp ?? null,
-      amDeparture: dayLogs.length >= 4 ? dayLogs[1]?.timestamp ?? null : null,
-      pmArrival: dayLogs.length >= 4 ? dayLogs[2]?.timestamp ?? null : null,
-      pmDeparture: dayLogs.length >= 2 ? dayLogs[dayLogs.length - 1]?.timestamp ?? null : null,
+      amArrival: amIn?.timestamp ?? null,
+      amDeparture: amOut?.timestamp ?? null,
+      pmArrival: pmIn?.timestamp ?? null,
+      pmDeparture: pmOut?.timestamp ?? null,
       undertimeHours: undertime.hours,
       undertimeMinutes: undertime.minutes,
       overtimeHours: overtime.hours,

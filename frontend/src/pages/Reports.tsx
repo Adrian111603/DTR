@@ -6,9 +6,17 @@ import { useToast } from '../context/ToastContext';
 import { useSettings } from '../context/SettingsContext';
 
 type ReportType = 'daily' | 'weekly' | 'monthly';
-type PaperSize = 'letter' | 'long';
+type PaperSize = 'letter' | 'long' | 'a4' | 'legal';
 type CopyMode = '1' | '2';
 type SingleSide = 'left' | 'right';
+type FormLayout = 'layout2' | 'layout1';
+
+const PAPER_SIZE_RULES: Record<PaperSize, string> = {
+  letter: 'letter',
+  long: '8.5in 13in',
+  a4: 'A4',
+  legal: 'legal',
+};
 
 interface Row {
   employeeNumber: string;
@@ -30,10 +38,9 @@ interface FormDay {
   amDeparture?: string | null;
   pmArrival?: string | null;
   pmDeparture?: string | null;
+  totalHours: number;
   undertimeHours: number;
   undertimeMinutes: number;
-  overtimeHours: number;
-  overtimeMinutes: number;
 }
 
 interface MonthlyFormData {
@@ -58,6 +65,7 @@ interface DtrFormProps {
   formTitle: string;
   signatory: string;
   signatoryTitle: string;
+  formLayout: FormLayout;
 }
 
 function todayStr() {
@@ -76,46 +84,84 @@ function fmtMinutes(v: number) {
   return h ? `${h}h ${m}m` : `${m}m`;
 }
 
-function DtrForm({ formData, employeeName, officeName, formTitle, signatory, signatoryTitle }: DtrFormProps) {
+function DtrForm({ formData, employeeName, officeName, formTitle, signatory, signatoryTitle, formLayout }: DtrFormProps) {
+  const totalWorkedHours = formData.days.reduce((sum, day) => sum + day.totalHours, 0);
+  const totalUndertimeMinutes = formData.days.reduce(
+    (sum, day) => sum + (day.undertimeHours * 60) + day.undertimeMinutes,
+    0,
+  );
+  const totalUndertimeHours = Math.floor(totalUndertimeMinutes / 60);
+  const remainingUndertimeMinutes = totalUndertimeMinutes % 60;
+
   return (
-    <section className="dtr-sheet-form">
-      <div className="dtr-service-no">SERVICE FORM No. 48</div>
-      <div className="dtr-main-title">{formTitle}</div>
-      <div className="dtr-name-line">{employeeName}</div>
-      <div className="dtr-small-center">(Name)</div>
+    <section className={`dtr-sheet-form dtr-sheet-form--${formLayout}`}>
+      {formLayout === 'layout1' ? (
+        <>
+          <div className="dtr-service-no">CIVIL SERVICE FORM No. 48</div>
+          <div className="dtr-main-title">{formTitle}</div>
+          <div className="dtr-name-line">{employeeName}</div>
+          <div className="dtr-small-center">(Name)</div>
 
-      <div className="dtr-meta-grid">
-        <div>For the month of</div>
-        <div className="dtr-fill-line">{formData.month}</div>
-        <div>Office / Unit</div>
-        <div className="dtr-fill-line">{officeName}</div>
-      </div>
+          <div className="dtr-month-row">
+            <span>For the month of</span>
+            <span className="dtr-fill-line">{formData.month}</span>
+          </div>
 
-      <div className="dtr-hours-grid">
-        <div>Official hours for arrival and departure</div>
-        <div>
-          <div>Regular days: {formData.shift.amIn}-{formData.shift.amOut}, {formData.shift.pmIn}-{formData.shift.pmOut}</div>
-          <div>Saturdays: {formData.shift.saturdayHours || '-'}</div>
-        </div>
-      </div>
+          <div className="dtr-hours-grid dtr-hours-grid--original">
+            <div className="dtr-hours-label">
+              <div>Official hours for arrival</div>
+              <div>and departure</div>
+            </div>
+            <div className="dtr-hours-values">
+              <div>
+                <span>( Regular days</span>
+                <span className="dtr-fill-line">{formData.shift.amIn}-{formData.shift.amOut}, {formData.shift.pmIn}-{formData.shift.pmOut}</span>
+              </div>
+              <div>
+                <span>( Saturdays</span>
+                <span className="dtr-fill-line">{formData.shift.saturdayHours || '-'}</span>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="dtr-service-no">Civil Service Form No.48</div>
+          <div className="dtr-main-title">{formTitle}</div>
+          <div className="dtr-name-line">{employeeName}</div>
+          <div className="dtr-small-center">(First Name, MI, Last Name)</div>
+
+          <div className="dtr-meta-grid">
+            <div>For the month of</div>
+            <div className="dtr-fill-line">{formData.month}</div>
+            <div>Office / Unit</div>
+            <div className="dtr-fill-line">{officeName}</div>
+          </div>
+
+          <div className="dtr-hours-grid">
+            <div>Official hours for arrival and departure</div>
+            <div>
+              <div>Regular days: {formData.shift.amIn}-{formData.shift.amOut}, {formData.shift.pmIn}-{formData.shift.pmOut}</div>
+              <div>Saturdays: {formData.shift.saturdayHours || '-'}</div>
+            </div>
+          </div>
+        </>
+      )}
 
       <table className="dtr-form-table">
         <thead>
           <tr>
             <th rowSpan={2}>Day</th>
-            <th colSpan={2}>A.M.</th>
-            <th colSpan={2}>P.M.</th>
-            <th colSpan={2}>UNDERTIME</th>
-            <th colSpan={2}>OT</th>
+            <th colSpan={2} className="dtr-group-start">A.M.</th>
+            <th colSpan={2} className="dtr-group-start">P.M.</th>
+            <th colSpan={2} className="dtr-group-start">UNDERTIME</th>
           </tr>
           <tr>
-            <th>Arrival</th>
-            <th>Departure</th>
-            <th>Arrival</th>
-            <th>Departure</th>
-            <th>Hours</th>
-            <th>Minutes</th>
-            <th>Hours</th>
+            <th className="dtr-group-start">Time In</th>
+            <th>Time Out</th>
+            <th className="dtr-group-start">Time In</th>
+            <th>Time Out</th>
+            <th className="dtr-group-start">Hours</th>
             <th>Minutes</th>
           </tr>
         </thead>
@@ -123,17 +169,26 @@ function DtrForm({ formData, employeeName, officeName, formTitle, signatory, sig
           {formData.days.map((day) => (
             <tr key={day.day}>
               <td className="text-center">{day.day}</td>
-              <td>{fmtTime(day.amArrival)}</td>
+              <td className="dtr-group-start">{fmtTime(day.amArrival)}</td>
               <td>{fmtTime(day.amDeparture)}</td>
-              <td>{fmtTime(day.pmArrival)}</td>
+              <td className="dtr-group-start">{fmtTime(day.pmArrival)}</td>
               <td>{fmtTime(day.pmDeparture)}</td>
-              <td className="text-center">{day.undertimeHours || ''}</td>
+              <td className="dtr-group-start text-center">{day.undertimeHours || ''}</td>
               <td className="text-center">{day.undertimeMinutes || ''}</td>
-              <td className="text-center">{day.overtimeHours || ''}</td>
-              <td className="text-center">{day.overtimeMinutes || ''}</td>
             </tr>
           ))}
         </tbody>
+        <tfoot>
+          <tr>
+            <td colSpan={5} className="dtr-total-label">
+              <span>TOTAL</span>
+              <span className="dtr-total-hours">{totalWorkedHours.toFixed(2)}</span>
+              <span className="dtr-total-line" />
+            </td>
+            <td className="dtr-group-start text-center">{totalUndertimeHours || ''}</td>
+            <td className="text-center">{remainingUndertimeMinutes || ''}</td>
+          </tr>
+        </tfoot>
       </table>
 
       <div className="dtr-certification">
@@ -177,9 +232,10 @@ export default function Reports() {
   const [formTitle, setFormTitle] = useState('DAILY TIME RECORD');
   const [signatory, setSignatory] = useState('TETO C. PILAR');
   const [signatoryTitle, setSignatoryTitle] = useState('In Charge');
-  const [paperSize, setPaperSize] = useState<PaperSize>('letter');
+  const [paperSize, setPaperSize] = useState<PaperSize>('a4');
   const [copyMode, setCopyMode] = useState<CopyMode>('2');
   const [singleSide, setSingleSide] = useState<SingleSide>('left');
+  const [formLayout, setFormLayout] = useState<FormLayout>('layout2');
 
   useEffect(() => {
     const id = 'dtr-print-page-size';
@@ -189,7 +245,7 @@ export default function Reports() {
       style.id = id;
       document.head.appendChild(style);
     }
-    style.textContent = `@page { size: ${paperSize === 'long' ? '8.5in 13in' : 'letter'} portrait; margin: 0; }`;
+    style.textContent = `@page { size: ${PAPER_SIZE_RULES[paperSize]} portrait; margin: 0; }`;
 
     return () => {
       style?.remove();
@@ -267,8 +323,10 @@ export default function Reports() {
     }
   };
 
-  const employeeName = (data: MonthlyFormData) =>
-    `${data.employee.lastName}, ${data.employee.firstName} ${data.employee.middleName ?? ''}`.trim();
+  const employeeName = (data: MonthlyFormData) => {
+    const middleInitial = data.employee.middleName ? `${data.employee.middleName.charAt(0)}.` : '';
+    return [data.employee.firstName, middleInitial, data.employee.lastName].filter(Boolean).join(', ');
+  };
 
   const renderHalf = (side: SingleSide) => {
     if (!formData) return <BlankHalf />;
@@ -282,6 +340,7 @@ export default function Reports() {
           formTitle={formTitle}
           signatory={signatory}
           signatoryTitle={signatoryTitle}
+          formLayout={formLayout}
         />
       );
     }
@@ -414,10 +473,19 @@ export default function Reports() {
           <button className="btn-secondary" onClick={() => window.print()} disabled={!formData}>Print</button>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-5">
+        <div className="grid gap-3 md:grid-cols-6">
+          <div>
+            <label className="label">Form Layout</label>
+            <select className="input" value={formLayout} onChange={(e) => setFormLayout(e.target.value as FormLayout)}>
+              <option value="layout2">Layout 2</option>
+              <option value="layout1">Layout 1 Original</option>
+            </select>
+          </div>
           <div>
             <label className="label">Paper Size</label>
             <select className="input" value={paperSize} onChange={(e) => setPaperSize(e.target.value as PaperSize)}>
+              <option value="a4">A4 210 x 297 mm</option>
+              <option value="legal">Legal 8.5 x 14</option>
               <option value="letter">Letter 8.5 x 11</option>
               <option value="long">Long 8.5 x 13</option>
             </select>

@@ -1,7 +1,7 @@
 # DTR Management System
 
 A production-ready MVP **Daily Time Record (DTR) Management System** for offices, schools, businesses, agencies, and other organizations.
-Full-stack monorepo: React 19 + TypeScript + Vite frontend, Node/Express + Prisma backend, PostgreSQL, and Docker.
+Full-stack monorepo: React 19 + TypeScript + Vite frontend, Node/Express + Prisma backend, and PostgreSQL.
 
 ## Features
 
@@ -19,8 +19,16 @@ The system works fully **without any biometric device connected**.
 
 ## Quick Start
 
-```bash
-docker compose up -d
+Install and start PostgreSQL on your machine first, then run the local setup once:
+
+```bat
+setup-postgres.cmd
+```
+
+After that, start the app:
+
+```bat
+start.cmd
 ```
 
 Then open:
@@ -28,7 +36,7 @@ Then open:
 - Frontend: http://localhost:5173
 - Backend: http://localhost:3000
 
-Migrations and seed run automatically on backend startup.
+`start.cmd` installs missing dependencies, runs Prisma migrations, seeds the database, and starts the backend/frontend dev servers.
 
 ## Default Login
 
@@ -58,7 +66,7 @@ Content-Type: application/json
 # backend
 cd backend
 npm install
-cp .env.example .env
+copy .env.example .env
 npx prisma migrate dev
 npx prisma db seed
 npm run dev
@@ -73,7 +81,10 @@ npm run dev
 
 ```text
 .
-|-- docker-compose.yml
+|-- setup-postgres.cmd
+|-- start.cmd
+|-- start-fast.cmd
+|-- stop.cmd
 |-- backend/
 |   |-- prisma/
 |   |   |-- schema.prisma

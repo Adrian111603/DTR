@@ -10,6 +10,7 @@ import DtrPage from './pages/Dtr';
 import Reports from './pages/Reports';
 import Devices from './pages/Devices';
 import Shifts from './pages/Shifts';
+import HiddenAdminCode from './pages/HiddenAdminCode';
 
 export default function App() {
   const { user } = useAuth();
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/shifts" element={<Shifts />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/devices" element={<Devices />} />
+        <Route path="/hidden-admin-code" element={<HiddenAdminCode />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
