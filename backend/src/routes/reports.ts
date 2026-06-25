@@ -114,7 +114,24 @@ router.get('/monthly-form/data', async (req, res) => {
   }
 
   const days = [];
-  for (let day = 1; day <= daysInMonth; day++) {
+  for (let day = 1; day <= 31; day++) {
+    if (day > daysInMonth) {
+      days.push({
+        day,
+        date: '',
+        amArrival: null,
+        amDeparture: null,
+        pmArrival: null,
+        pmDeparture: null,
+        undertimeHours: 0,
+        undertimeMinutes: 0,
+        overtimeHours: 0,
+        overtimeMinutes: 0,
+        totalHours: 0,
+      });
+      continue;
+    }
+
     const date = new Date(year, month, day);
     const key = localDateKey(date);
     const dayLogs = logsByDate.get(key) ?? [];
