@@ -129,7 +129,7 @@ function DtrForm({ formData, employeeName, officeName, formTitle, signatory, sig
           <div className="dtr-service-no">Civil Service Form No.48</div>
           <div className="dtr-main-title">{formTitle}</div>
           <div className="dtr-name-line">{employeeName}</div>
-          <div className="dtr-small-center">(First Name, MI, Last Name)</div>
+          <div className="dtr-small-center">(First Name MI Last Name)</div>
 
           <div className="dtr-meta-grid">
             <div>For the month of</div>
@@ -325,7 +325,7 @@ export default function Reports() {
 
   const employeeName = (data: MonthlyFormData) => {
     const middleInitial = data.employee.middleName ? `${data.employee.middleName.charAt(0)}.` : '';
-    return [data.employee.firstName, middleInitial, data.employee.lastName].filter(Boolean).join(', ');
+    return [data.employee.firstName, middleInitial, data.employee.lastName].filter(Boolean).join(' ');
   };
 
   const renderHalf = (side: SingleSide) => {
